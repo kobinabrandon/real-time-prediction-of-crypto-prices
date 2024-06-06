@@ -36,7 +36,7 @@ def produce_trades(kafka_broker_address: str, kafka_topic_name: str) -> None:
                     key=message.key
                 )
 
-                logger.success('Message sent!')
+                logger.success('Message sent')
             sleep(1)
 
 
