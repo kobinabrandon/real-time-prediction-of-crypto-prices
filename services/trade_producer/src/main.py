@@ -22,7 +22,7 @@ def produce_trades(kafka_broker_address: str, kafka_topic_name: str) -> None:
     logger.info("Creating the producer")
     with app.get_producer() as producer:
         while True:
-            kraken_api = KrakenWebsocketTradeAPI(product_id="BTC/USD")
+            kraken_api = KrakenWebsocketTradeAPI(product_id="BTC/EUR")
             trades : list[dict] = kraken_api.get_trades()
 
             for trade in trades:

@@ -7,9 +7,11 @@ RUN pip install poetry
 
 WORKDIR /app
 
-# Copy all the code into the container
-COPY . /app
+COPY pyproject.toml poetry.lock /app/
 
 RUN poetry install
+
+# Copy all the code into the container
+COPY . /app
 
 CMD ["poetry", "run", "python", "src/main.py"]
