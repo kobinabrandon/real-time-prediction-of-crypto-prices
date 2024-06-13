@@ -3,6 +3,7 @@ from loguru import logger
 from quixstreams import Application
 
 from kraken_api import KrakenWebsocketTradeAPI
+from config import config
 
 
 def produce_trades(kafka_broker_address: str, kafka_topic_name: str) -> None:
@@ -43,6 +44,6 @@ def produce_trades(kafka_broker_address: str, kafka_topic_name: str) -> None:
 
 if __name__ == '__main__':
     produce_trades(
-        kafka_broker_address="localhost:19092", 
-        kafka_topic_name="trade"
+        kafka_broker_address=config.kafka_broker_address, 
+        kafka_topic_name=config.kafka_input_topic_name
     )

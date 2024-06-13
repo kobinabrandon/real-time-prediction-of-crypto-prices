@@ -7,24 +7,29 @@ from config import config
 
 
 def extract_columns_of_interest(dataframe: Application.dataframe) -> Application.dataframe:
-    # Extracts columns of interest from the dictionary which is the value which 
-    # corresponds to the key called "value" key in the message
-    metrics = ["open", "high", "low", "close", "product_id"] 
-    for metric in metrics:
+    """
+    Extract columns of interest from the dictionary which is the value which corresponds to
+    the key called "value" key in the message.
+
+    Args:
+        dataframe: the streaming dataframe coming from the Kafka input topic
+    Return:
+         Application.dataframe: streaming dataframe containing the desired information only.
+    """
+    for metric in ["open", "high", "low", "close", "product_id"]:
         dataframe[metric] = dataframe["value"][metric]
     
     # Add a timestamp key, which is the value corresponding to the "end" key in the message
     dataframe["timestamp"] = dataframe["end"]
 
-    # Return the dataframe containing only those columns, now that they're 
-    # keys in the original dictionary
+    # Dataframe containing the desired columns, since their names are now keys in the original dictionary
     dataframe = dataframe[["timestamp", "open", "high", "low", "close", "product_id"]]
     return dataframe
 
 
 def init_ohlc_candle(trade: dict) -> dict:
     """
-    Initialise OHLC candle with the first trade
+    Initialise OHLC candle with the first trade  
     """
     return {
         "timestamp": trade["timestamp"],
@@ -82,8 +87,7 @@ def trade_to_ohlc(
         duration_ms=timedelta(seconds=ohlc_window_seconds)
     )
 
-    streaming_df = streaming_df.reduce(reducer=update_ohlc_candle, initializer=init_ohlc_candle).final()
-
+    streaming_df = streaming_df.reduce(reducer=update_ohlc_candle, initializer=init_ohlc_candle).current()
     streaming_df = extract_columns_of_interest(dataframe=streaming_df)
 
     streaming_df = streaming_df.update(logger.info)

@@ -10,8 +10,8 @@ load_dotenv(
 class Config(BaseSettings):
     product_id: str = "ETH/USD"
     kafka_broker_address: str = os.environ["KAFKA_BROKER_ADDRESS"]
-    kafka_input_topic_name: str = "trade"
-    kafka_output_topic_name: str = "ohlc"
+    kafka_input_topic_name: str = os.environ["KAFKA_INPUT_TOPIC_NAME"]
+    kafka_output_topic_name: str = os.environ["KAFKA_OUTPUT_TOPIC_NAME"]
     ohlc_windows_seconds: int = os.environ["OHLC_WINDOWS_SECONDS"]
 
 config = Config()
