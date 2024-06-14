@@ -1,59 +1,58 @@
 import json
+import requests
 
-from time import sleep
-from loguru import logger 
+from loguru import logger
 from websocket import create_connection
 
 
-class KrakenWebsocketTradeAPI():
+class KrakenWebsocketAPI:
 
     def __init__(self, product_id: str):
+        self.websocket = None
         self.product_id = product_id
         self.url = "wss://ws.kraken.com/v2"
-        
-    def connect(self):
-        self._ws = create_connection(url=self.url)
-        logger.success("Connection established")
 
-        return self._ws
+    def connect(self):
+        self.websocket = create_connection(url=self.url)
+        logger.success("Connection established")
+        return self.websocket
 
     def subscribe(self, product_id: str) -> None:
 
         logger.info(f"Subscribing to trades for {self.product_id}...")
-        
-        self.msg = {
+
+        msg = {
             "method": "subscribe",
             "params": {
-                "channel": "trade", 
-                "symbol": [product_id], 
+                "channel": "trade",
+                "symbol": [product_id],
                 "snapshot": False
             }
         }
-         
+
         try:
             # Send subscription request
-            self._ws.send(
-                payload=json.dumps(self.msg)
+            self.websocket.send(
+                payload=json.dumps(msg)
             )
             logger.success("Subscription successful")
 
             # Skip two messages received as they contain no trade data
-            _ = self._ws.recv()
-            _ = self._ws.recv()
+            _ = self.websocket.recv()
+            _ = self.websocket.recv()
 
         except Exception as e:
             logger.error(f"Error subscribing to trades {e}")
-            self._ws.close()
+            self.websocket.close()
             self.connect()
-
 
     def get_trades(self) -> list[dict]:
 
-        self._ws = self.connect()
+        self.websocket = self.connect()
         self.subscribe(product_id=self.product_id)
-        
+
         try:
-            message = self._ws.recv()
+            message = self.websocket.recv()
 
         except Exception as e:
             logger.error(f"Error receiving message: {e}")
@@ -63,7 +62,7 @@ class KrakenWebsocketTradeAPI():
 
         if "heartbeat" in message:
             return []
-        
+
         parsed_message = json.loads(message)
 
         trades = []
@@ -77,4 +76,29 @@ class KrakenWebsocketTradeAPI():
                 }
             )
 
-        return trades 
+        return trades
+
+
+class KrakenRestAPI:
+
+    def __init__(self, product_ids: list[str], from_ms: int, to_ms: int):
+        """
+        Initialisation of the Rest API
+        :param product_ids: list of product IDs for which we want trades
+        :param from_ms: the timestamp from which we want to find trades
+        :param to_ms: the timestamp after which we no longer seek trades
+        """
+
+        self.product_ids = product_ids
+        self.from_ms = from_ms
+        self.to_ms = to_ms
+
+    @staticmethod
+    def get_trades(self) -> list[dict]:
+        payload = {}
+        url = "https://api.kraken.com/0/public/Trades"
+        headers = {"Accept": "application/json"}
+
+        response = requests.request(method="GET", url=url, headers=headers, data=payload)
+
+        print(response.text)
