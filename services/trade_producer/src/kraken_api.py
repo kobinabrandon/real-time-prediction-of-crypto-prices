@@ -11,6 +11,7 @@ class KrakenWebsocketAPI:
         self.websocket = None
         self.product_id = product_id
         self.url = "wss://ws.kraken.com/v2"
+        self.is_done = False
 
     def connect(self):
         self.websocket = create_connection(url=self.url)
@@ -50,16 +51,13 @@ class KrakenWebsocketAPI:
 
         self.websocket = self.connect()
         self.subscribe(product_id=self.product_id)
-
         try:
             message = self.websocket.recv()
-
         except Exception as e:
             logger.error(f"Error receiving message: {e}")
             return []
 
         logger.success(f"Message received: {message}")
-
         if "heartbeat" in message:
             return []
 
@@ -78,27 +76,45 @@ class KrakenWebsocketAPI:
 
         return trades
 
+    @staticmethod
+    def is_done() -> bool:
+        return False
+
 
 class KrakenRestAPI:
 
-    def __init__(self, product_ids: list[str], from_ms: int, to_ms: int):
+    def __init__(self, product_id: str, from_ms: int, to_ms: int):
         """
         Initialisation of the Rest API
-        :param product_ids: list of product IDs for which we want trades
+        :param product_id: the product ID for which we want trades
         :param from_ms: the timestamp from which we want to find trades
         :param to_ms: the timestamp after which we no longer seek trades
         """
-
-        self.product_ids = product_ids
+        self.product_id = product_id
         self.from_ms = from_ms
         self.to_ms = to_ms
+        self.is_done = None
 
-    @staticmethod
     def get_trades(self) -> list[dict]:
         payload = {}
-        url = "https://api.kraken.com/0/public/Trades"
+        url = f"https://api.kraken.com/0/public/Trades?pair={self.product_id}&since={self.from_ms}"
         headers = {"Accept": "application/json"}
-
         response = requests.request(method="GET", url=url, headers=headers, data=payload)
 
-        print(response.text)
+        raw_data = json.loads(response.text)
+        trade_data_of_interest = [
+            {
+                "price": float(trade[0]),
+                "volume": float(trade[1]),
+                "time": float(trade[2])
+            } for trade in raw_data["result"][self.product_id]
+        ]
+
+        def _check_if_done(trade_data: list[dict]):
+            last_timestamp = max(
+                [trade["time"] for trade in trade_data]
+            )
+            self.is_done = True if last_timestamp >= self.to_ms else False
+
+        _check_if_done(trade_data=trade_data_of_interest)
+        return trade_data_of_interest

@@ -2,16 +2,27 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from pydantic_settings import BaseSettings
 
-# Load the .env file variables as environment variables so they can be accessed
+# Load the .env file variables as environment variables to enable access
 load_dotenv(
     find_dotenv(filename=".env")
 )
 
+
 class Config(BaseSettings):
-    product_id: str = "ETH/USD"
+    product_id: str = "BTC/USD"
+
+    input_kafka_topic: str = os.environ["INPUT_KAFKA_TOPIC"]
+    output_kafka_topic: str = os.environ["OUTPUT_KAFKA_TOPIC"]
     kafka_broker_address: str = os.environ["KAFKA_BROKER_ADDRESS"]
-    kafka_input_topic_name: str = os.environ["KAFKA_INPUT_TOPIC_NAME"]
-    kafka_output_topic_name: str = os.environ["KAFKA_OUTPUT_TOPIC_NAME"]
     ohlc_windows_seconds: int = os.environ["OHLC_WINDOWS_SECONDS"]
+
+    hopsworks_api_key: str = os.environ["HOPSWORKS_API_KEY"]
+    hopsworks_project_name: str = os.environ["HOPSWORKS_PROJECT_NAME"]
+    feature_group_name: str = os.environ["FEATURE_GROUP_NAME"]
+    feature_group_version: int = os.environ["FEATURE_GROUP_VERSION"]
+
+    live: bool = True
+    last_n_days: int = 7
+
 
 config = Config()

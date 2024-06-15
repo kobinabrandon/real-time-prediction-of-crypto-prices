@@ -1,18 +1,17 @@
-import json 
-from quixstreams import Application
+import json
 from loguru import logger
+from quixstreams import Application
 
-from config import config
+from services.config import config
 from hopsworks_api import push_data_to_feature_store
 
 
 def kafka_to_feature_store(
-    kafka_topic: str,
-    kafka_broker_address: str,
-    feature_group_name: str,
-    feature_group_version: int
+        kafka_topic: str,
+        kafka_broker_address: str,
+        feature_group_name: str,
+        feature_group_version: int
 ) -> None:
-
     """
     Read OHLC data from the Kafka topic, and write it to 
     the feature group in the Hopsworks feature store.
@@ -26,20 +25,18 @@ def kafka_to_feature_store(
     input_topic = app.topic(name=kafka_topic, value_deserializer="json")
 
     with app.get_consumer() as consumer:
-        consumer.subscribe(topics=[kafka_topic])    
+        consumer.subscribe(topics=[kafka_topic])
         while True:
-            msg = consumer.poll(timeout=0.5) # Wait for half a second for each message
+            msg = consumer.poll(timeout=0.5)  # Wait for half a second for each message
             if msg is None:
-                continue 
+                continue
             elif msg.error():
                 logger.error(f"Kafka error: {msg.error()}")
                 continue
-
             else:
+                value = msg.value()
                 # Parse the message from Kafka
-                ohlc = json.loads(
-                    msg.value().decode("utf-8")
-                )
+                ohlc = json.loads(value.decode("utf-8"))
 
                 push_data_to_feature_store(
                     feature_group_name=feature_group_name,
@@ -47,13 +44,12 @@ def kafka_to_feature_store(
                     data=ohlc
                 )
 
-            value = msg.value()
             consumer.store_offsets(message=msg)
 
 
 if __name__ == "__main__":
     kafka_to_feature_store(
-        kafka_topic=config.kafka_topic,
+        kafka_topic=config.kafka_output_topics,
         kafka_broker_address=config.kafka_broker_address,
         feature_group_name=config.feature_group_name,
         feature_group_version=config.feature_group_version
