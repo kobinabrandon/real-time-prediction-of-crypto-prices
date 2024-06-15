@@ -1,4 +1,4 @@
-import os 
+import os
 from dotenv import load_dotenv, find_dotenv
 from pydantic_settings import BaseSettings
 
@@ -16,13 +16,8 @@ class Config(BaseSettings):
     kafka_broker_address: str = os.environ["KAFKA_BROKER_ADDRESS"]
     ohlc_windows_seconds: int = os.environ["OHLC_WINDOWS_SECONDS"]
 
-    hopsworks_api_key: str = os.environ["HOPSWORKS_API_KEY"]
-    hopsworks_project_name: str = os.environ["HOPSWORKS_PROJECT_NAME"]
-    feature_group_name: str = os.environ["FEATURE_GROUP_NAME"]
-    feature_group_version: int = os.environ["FEATURE_GROUP_VERSION"]
-
-    live: bool = True
-    last_n_days: int = 7
+    live: bool = os.environ["LIVE"]
+    last_n_days: int = 14
 
 
 config = Config()
