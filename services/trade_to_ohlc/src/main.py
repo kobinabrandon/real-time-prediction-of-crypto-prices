@@ -3,7 +3,7 @@ from quixstreams import Application
 
 from loguru import logger 
 
-from config import config
+from candle_config import config
 
 
 def extract_columns_of_interest(dataframe: Application.dataframe) -> Application.dataframe:
@@ -32,7 +32,6 @@ def init_ohlc_candle(trade: dict) -> dict:
     Initialise OHLC candle with the first trade  
     """
     return {
-        "timestamp": trade["timestamp"],
         "open": trade["price"],
         "high": trade["price"],
         "low": trade["price"],

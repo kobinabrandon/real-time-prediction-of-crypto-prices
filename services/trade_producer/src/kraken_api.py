@@ -106,14 +106,13 @@ class KrakenRestAPI:
             {
                 "price": float(trade[0]),
                 "volume": float(trade[1]),
-                "time": float(trade[2])
+                "time": float(trade[2]),
+                "product_id": self.product_id
             } for trade in raw_data["result"][self.product_id]
         ]
 
         def _check_if_done(trade_data: list[dict]):
-            last_timestamp = max(
-                [trade["time"] for trade in trade_data]
-            )
+            last_timestamp = max([trade["time"] for trade in trade_data])//1000  # Convert from ns to ms
             self.is_done = True if last_timestamp >= self.to_ms else False
 
         _check_if_done(trade_data=trade_data_of_interest)

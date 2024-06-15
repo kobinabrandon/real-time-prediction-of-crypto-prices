@@ -1,6 +1,6 @@
 import hopsworks 
 import pandas as pd 
-from config import config 
+from feature_store_config import config
 
 
 def push_data_to_feature_store(

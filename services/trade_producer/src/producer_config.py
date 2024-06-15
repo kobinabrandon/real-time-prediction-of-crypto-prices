@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 # Load the .env file variables as environment variables to enable access
 load_dotenv(
-    find_dotenv(filename=".env")
+    find_dotenv(filename="../.env")
 )
 
 

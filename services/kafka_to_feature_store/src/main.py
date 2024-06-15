@@ -2,7 +2,7 @@ import json
 from loguru import logger
 from quixstreams import Application
 
-from services.config import config
+from feature_store_config import config
 from hopsworks_api import push_data_to_feature_store
 
 
@@ -23,7 +23,6 @@ def kafka_to_feature_store(
     )
 
     input_topic = app.topic(name=kafka_topic, value_deserializer="json")
-
     with app.get_consumer() as consumer:
         consumer.subscribe(topics=[kafka_topic])
         while True:
@@ -49,7 +48,7 @@ def kafka_to_feature_store(
 
 if __name__ == "__main__":
     kafka_to_feature_store(
-        kafka_topic=config.kafka_output_topics,
+        kafka_topic=config.output_kafka_topic,
         kafka_broker_address=config.kafka_broker_address,
         feature_group_name=config.feature_group_name,
         feature_group_version=config.feature_group_version
