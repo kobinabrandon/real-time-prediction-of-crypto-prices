@@ -31,7 +31,7 @@ def produce_trades(
         else:
             to_ms = int(time.time() * 1000)  # Convert current time in seconds into milliseconds
             from_ms = to_ms - last_n_days * 24 * 60 * 60 * 1000
-            kraken_api = KrakenRestAPI(product_id=config.product_id, from_ms=from_ms, to_ms=to_ms)
+            kraken_api = KrakenRestAPI(product_ids=config.product_ids, from_ms=from_ms, to_ms=to_ms)
 
         while True:
             trade_data = kraken_api.get_trades()
