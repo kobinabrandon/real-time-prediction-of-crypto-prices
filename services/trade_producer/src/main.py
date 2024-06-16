@@ -40,7 +40,7 @@ def produce_trades(
                 producer.produce(topic=topic.name, value=message.value, key=message.key)  # Produce into Kafka topic
                 logger.info(message.value)
 
-            if kraken_api.is_done:
+            if kraken_api.is_finished:
                 logger.success("Done fetching historical data")
                 break
 

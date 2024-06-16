@@ -75,26 +75,22 @@ class KrakenWebsocketAPI:
 
         return trades
 
-    @staticmethod
-    def is_done() -> bool:
-        return False
-
 
 class KrakenRestAPI:
 
-    def __init__(self, product_id: str, from_ms: int, to_ms: int):
+    def __init__(self, product_id: list[str], from_ms: int, to_ms: int):
         """
         Initialisation of the Rest API
-        :param product_id: the product ID for which we want trades
+        :param product_id: the currency pair for which we want trades
         :param from_ms: the timestamp from which we want to find trades
         :param to_ms: the timestamp after which we no longer seek trades
         """
         self.product_id = product_id
         self.from_ms = from_ms
         self.to_ms = to_ms
-        self.is_done = None
+        self.is_finished = None
 
-    def get_trades(self) -> list[dict]:
+    def get_trades(self) -> list[dict[str, float | str]]:
         """
         Make an HTTP request to the REST API for data between one timestamp and another, and extract
         the metrics of interest from the response. Then check whether the last timestamp in the
@@ -121,9 +117,8 @@ class KrakenRestAPI:
 
         last_timestamp_ns = int(raw_data["result"]["last"])
         last_timestamp_ms = last_timestamp_ns//1_000_000
-        self.is_done = True if last_timestamp_ms >= self.to_ms else False
 
-        logger.success(f"Got {len(data_of_interest)} trades")
-        logger.success(f"Last trade timestamp {last_timestamp_ms}")
-
+        if last_timestamp_ms >= self.to_ms:
+            logger.success(f"Done collecting historical data")
+            self.is_finished = True
         return data_of_interest
