@@ -3,7 +3,7 @@ from loguru import logger
 from quixstreams import Application
 
 from producer_config import config
-from kraken_api import KrakenWebsocketAPI, KrakenRestAPIMultiplePairs
+from kraken_api import KrakenWebsocketAPI, KrakenRestAPI
 
 
 def produce_trades(
@@ -27,11 +27,11 @@ def produce_trades(
     logger.info("Creating the producer")
     with app.get_producer() as producer:
         if live:
-            kraken_api = KrakenWebsocketAPI(product_id=config.product_ids[0])
+            kraken_api = KrakenWebsocketAPI(product_id=config.product_id)
         else:
             to_ms = int(time.time() * 1000)  # Convert current time in seconds into milliseconds
             from_ms = to_ms - last_n_days * 24 * 60 * 60 * 1000
-            kraken_api = KrakenRestAPIMultiplePairs(product_ids=config.product_ids, from_ms=from_ms, to_ms=to_ms)
+            kraken_api = KrakenRestAPI(product_id=config.product_id, from_ms=from_ms, to_ms=to_ms)
 
         while True:
             trade_data = kraken_api.get_trades()
@@ -43,6 +43,8 @@ def produce_trades(
             if kraken_api.is_finished:
                 logger.success("Done fetching historical data")
                 break
+
+            time.sleep(1)
 
 
 if __name__ == "__main__":
