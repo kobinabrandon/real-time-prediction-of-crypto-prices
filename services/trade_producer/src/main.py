@@ -34,23 +34,23 @@ def produce_trades(
             kraken_api = KrakenRestAPI(product_id=config.product_id, from_ms=from_ms, to_ms=to_ms)
 
         while True:
+            trade_data = kraken_api.get_trades()
+            for trade in trade_data:
+                message = topic.serialize(key=trade["product_id"], value=trade)
+                producer.produce(topic=topic.name, value=message.value, key=message.key)  # Produce into Kafka topic
+                logger.info(message.value)
+
             if kraken_api.is_done:
                 logger.info("Done fetching historical data")
                 break
 
-            trade_data: list[dict] = kraken_api.get_trades()
-            for trade in trade_data:
-                message = topic.serialize(key=trade["product_id"], value=trade)
-                producer.produce(topic=topic.name, value=message.value, key=message.key)  # Produce into Kafka topic
-                logger.success('Message sent')
-
             time.sleep(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     produce_trades(
         kafka_broker_address=config.kafka_broker_address,
         kafka_topic_name=config.input_kafka_topic,
-        live=config.live,
-        last_n_days=config.last_n_days
+        last_n_days=config.last_n_days,
+        live=False
     )

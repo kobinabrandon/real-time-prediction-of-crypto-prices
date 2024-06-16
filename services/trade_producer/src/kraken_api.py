@@ -19,7 +19,6 @@ class KrakenWebsocketAPI:
         return self.websocket
 
     def subscribe(self, product_id: str) -> None:
-
         logger.info(f"Subscribing to trades for {self.product_id}...")
 
         msg = {
@@ -96,12 +95,22 @@ class KrakenRestAPI:
         self.is_done = None
 
     def get_trades(self) -> list[dict]:
+        """
+        Make an HTTP request to the REST API for data between one timestamp and another, and extract
+        the metrics of interest from the response. Then check whether the last timestamp in the
+        received data is past the targeted end timestamp.
+
+        :return:
+        """
         payload = {}
-        url = f"https://api.kraken.com/0/public/Trades?pair={self.product_id}&since={self.from_ms}"
+
+        # The terminal time must be in seconds
+        url = f"https://api.kraken.com/0/public/Trades?pair={self.product_id}&since={self.from_ms//1_000}"
         headers = {"Accept": "application/json"}
         response = requests.request(method="GET", url=url, headers=headers, data=payload)
 
         raw_data = json.loads(response.text)
+
         trade_data_of_interest = [
             {
                 "price": float(trade[0]),
@@ -111,9 +120,11 @@ class KrakenRestAPI:
             } for trade in raw_data["result"][self.product_id]
         ]
 
-        def _check_if_done(trade_data: list[dict]):
-            last_timestamp = max([trade["time"] for trade in trade_data])//1000  # Convert from ns to ms
-            self.is_done = True if last_timestamp >= self.to_ms else False
+        last_timestamp_ns = int(raw_data["result"]["last"])
+        last_timestamp_ms = last_timestamp_ns//1_000_000
+        self.is_done = True if last_timestamp_ms >= self.to_ms else False
 
-        _check_if_done(trade_data=trade_data_of_interest)
+        logger.success(f"Got {len(trade_data_of_interest)} trades")
+        logger.success(f"Last trade timestamp {last_timestamp_ms}")
+
         return trade_data_of_interest

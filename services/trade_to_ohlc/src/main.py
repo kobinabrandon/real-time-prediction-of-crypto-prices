@@ -1,9 +1,8 @@
+from loguru import logger
 from datetime import timedelta
 from quixstreams import Application
 
-from loguru import logger 
-
-from candle_config import config
+from candles_config import config
 
 
 def extract_columns_of_interest(dataframe: Application.dataframe) -> Application.dataframe:

@@ -2,7 +2,7 @@ import json
 from loguru import logger
 from quixstreams import Application
 
-from feature_store_config import config
+from hopsworks_config import config
 from hopsworks_api import push_data_to_feature_store
 
 
