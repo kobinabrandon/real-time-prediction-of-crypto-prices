@@ -41,7 +41,7 @@ def produce_trades(
                 logger.info(message.value)
 
             if kraken_api.is_done:
-                logger.info("Done fetching historical data")
+                logger.success("Done fetching historical data")
                 break
 
             time.sleep(1)

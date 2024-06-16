@@ -11,7 +11,7 @@ load_dotenv(
 class Config(BaseSettings):
     product_id: str = "ETH/USD"
     live: bool = os.environ["LIVE"]
-    last_n_days: int = 30
+    last_n_days: int = 1
 
     input_kafka_topic: str = os.environ["INPUT_KAFKA_TOPIC"]
     output_kafka_topic: str = os.environ["OUTPUT_KAFKA_TOPIC"]
