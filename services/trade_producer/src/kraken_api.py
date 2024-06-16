@@ -78,7 +78,7 @@ class KrakenWebsocketAPI:
 
 class KrakenRestAPI:
 
-    def __init__(self, product_id: str, from_ms: int, to_ms: int):
+    def __init__(self, product_id: list[str], from_ms: int, to_ms: int):
         """
         Initialisation of the Rest API
         :param product_id: the currency pair for which we want trades
@@ -100,8 +100,6 @@ class KrakenRestAPI:
         """
         payload = {}
 
-        all_trades = []
-        num_finished = 0
         # The terminal time must be in seconds
         url = f"https://api.kraken.com/0/public/Trades?pair={self.product_id}&since={self.from_ms//1_000}"
         headers = {"Accept": "application/json"}
@@ -120,37 +118,7 @@ class KrakenRestAPI:
         last_timestamp_ns = int(raw_data["result"]["last"])
         last_timestamp_ms = last_timestamp_ns//1_000_000
 
-        return data_of_interest
-
-    def is_finished(self, last_timestamp_ms: int):
-
         if last_timestamp_ms >= self.to_ms:
             logger.success(f"Done collecting historical data")
-            return True
-        else:
-            return False
-
-
-class KrakenRestAPIMultiplePairs:
-    def __init__(self, product_ids: list[str], from_ms: int, to_ms: int):
-        self.is_finished = None
-        self.product_ids = product_ids
-        self.rest_apis = [
-            KrakenRestAPI(product_id=product_id, from_ms=from_ms, to_ms=to_ms) for product_id in self.product_ids
-        ]
-
-    def get_trades(self):
-        trades = []
-        for api in self.rest_apis:
-            if api.is_finished:
-                logger.success(f"Done getting trades for {api.product_id}")
-                continue
-            else:
-                trades += api.get_trades()
-        return trades
-
-    def is_finished(self) -> bool:
-        for api in self.rest_apis:
-            if not api.is_finished():
-                return False
-        return True
+            self.is_finished = True
+        return data_of_interest
