@@ -21,8 +21,5 @@ class Config(BaseSettings):
     feature_group_name: str = os.environ["FEATURE_GROUP_NAME"]
     feature_group_version: int = os.environ["FEATURE_GROUP_VERSION"]
 
-    live: bool = os.environ["LIVE"]
-    last_n_days: int = 14
-
 
 config = Config()

@@ -110,8 +110,7 @@ class KrakenRestAPI:
         response = requests.request(method="GET", url=url, headers=headers, data=payload)
 
         raw_data = json.loads(response.text)
-
-        trade_data_of_interest = [
+        data_of_interest = [
             {
                 "price": float(trade[0]),
                 "volume": float(trade[1]),
@@ -124,7 +123,7 @@ class KrakenRestAPI:
         last_timestamp_ms = last_timestamp_ns//1_000_000
         self.is_done = True if last_timestamp_ms >= self.to_ms else False
 
-        logger.success(f"Got {len(trade_data_of_interest)} trades")
+        logger.success(f"Got {len(data_of_interest)} trades")
         logger.success(f"Last trade timestamp {last_timestamp_ms}")
 
-        return trade_data_of_interest
+        return data_of_interest
