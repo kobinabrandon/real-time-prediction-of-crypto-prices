@@ -5,7 +5,7 @@ networks:
     driver: bridge
 services:
   trade_producer:
-    container_name: trade_producer
+    #container_name: trade_producer
     build:
       context: ../services/trade_producer
     networks:
@@ -15,7 +15,7 @@ services:
       LIVE: False
       LAST_N_DAYS: 7
   trade_to_ohlc:
-    container_name: trade_to_ohlc
+    #container_name: trade_to_ohlc
     build:
       context: ../services/trade_to_ohlc
     networks:
@@ -24,7 +24,7 @@ services:
       KAFKA_BROKER_ADDRESS: redpanda-0:9092
       OHLC_WINDOW_SECONDS: 60
   kafka_to_feature_store:
-    container_name: kafka_to_feature_store
+    #container_name: kafka_to_feature_store
     build:
       context: ../services/kafka_to_feature_store
     networks:

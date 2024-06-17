@@ -64,12 +64,13 @@ def trade_to_ohlc(
     kafka_broker_address: str,
     input_kafka_topic: str,
     output_kafka_topic: str,
+    kafka_consumer_group: str,
     ohlc_window_seconds: int
 ) -> None:
 
     app = Application(
         broker_address=kafka_broker_address, 
-        consumer_group="trade_to_ohlc",
+        consumer_group=kafka_consumer_group,
         auto_offset_reset="earliest"
     )
     
@@ -100,5 +101,6 @@ if __name__ == "__main__":
         input_kafka_topic=config.input_kafka_topic,
         output_kafka_topic=config.output_kafka_topic,
         kafka_broker_address=config.kafka_broker_address,
+        kafka_consumer_group=config.kafka_consumer_group,
         ohlc_window_seconds=config.ohlc_windows_seconds
     )

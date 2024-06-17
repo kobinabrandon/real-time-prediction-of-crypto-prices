@@ -9,9 +9,9 @@ load_dotenv(
 
 
 class Config(BaseSettings):
-    product_ids: list[str] = ["ETH/USD", "ETH/EUR"]
+    product_ids: list[str] = ["ETH/USD", "ETH/EUR", "BTC/USD"]
     live: bool = os.environ["LIVE"]
-    last_n_days: int = 1
+    last_n_days: int | None = 7
 
     input_kafka_topic: str = os.environ["INPUT_KAFKA_TOPIC"]
     output_kafka_topic: str = os.environ["OUTPUT_KAFKA_TOPIC"]

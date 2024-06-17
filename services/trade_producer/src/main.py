@@ -27,7 +27,7 @@ def produce_trades(
     logger.info("Creating the producer")
     with app.get_producer() as producer:
         if live:
-            kraken_api = KrakenWebsocketAPI(product_id=config.product_id)
+            kraken_api = KrakenWebsocketAPI(product_ids=config.product_ids[0])
         else:
             to_ms = int(time.time() * 1000)  # Convert current time in seconds into milliseconds
             from_ms = to_ms - last_n_days * 24 * 60 * 60 * 1000
@@ -36,8 +36,16 @@ def produce_trades(
         while True:
             trade_data = kraken_api.get_trades()
             for trade in trade_data:
-                message = topic.serialize(key=trade["product_id"], value=trade)
-                producer.produce(topic=topic.name, value=message.value, key=message.key)  # Produce into Kafka topic
+                message = topic.serialize(key=trade["product_id"], value=trade, timestamp_ms=trade["time"])
+
+                # Produce into Kafka topic
+                producer.produce(
+                    topic=topic.name,
+                    value=message.value,
+                    key=message.key,
+                    timestamp=int(message.timestamp)
+                )
+
                 logger.info(message.value)
 
             if kraken_api.is_finished:
