@@ -9,7 +9,7 @@ load_dotenv(
 
 
 class Config(BaseSettings):
-    product_id: list[str] = ["ETH/USD", "ETH/EUR"]
+    product_ids: list[str] = ["ETH/USD", "ETH/EUR"]
     live: bool = os.environ["LIVE"]
     last_n_days: int = 1
 

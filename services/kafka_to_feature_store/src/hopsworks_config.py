@@ -9,7 +9,7 @@ load_dotenv(
 
 
 class Config(BaseSettings):
-    product_id: str = "BTC/USD"
+    product_ids: list[str] = ["BTC/USD"]
 
     input_kafka_topic: str = os.environ["INPUT_KAFKA_TOPIC"]
     output_kafka_topic: str = os.environ["OUTPUT_KAFKA_TOPIC"]

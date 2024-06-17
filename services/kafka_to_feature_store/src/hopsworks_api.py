@@ -6,7 +6,7 @@ from hopsworks_config import config
 def push_data_to_feature_store(
         feature_group_name: str,
         feature_group_version: int,
-        data: list[dict],
+        features: list[dict],
         to_offline_store: bool
 ) -> None:
     """
@@ -16,7 +16,7 @@ def push_data_to_feature_store(
     :param to_offline_store: whether to send data to the offline feature store (or the online one).
     :param feature_group_name: the name of the feature group that we'll be sending features to
     :param feature_group_version: the version of the feature group
-    :param data: the features to be uploaded
+    :param features: the features to be uploaded
     :return: None
     """
     project = hopsworks.login(project=config.hopsworks_project_name, api_key_value=config.hopsworks_api_key)
@@ -31,10 +31,8 @@ def push_data_to_feature_store(
         online_enabled=True
     )
 
-    breakpoint()
-    data = pd.DataFrame([data])
     ohlc_feature_group.insert(
-        features=data,
+        features=pd.DataFrame(features),
         write_options={"start_offline_materialization": to_offline_store}
     )
     

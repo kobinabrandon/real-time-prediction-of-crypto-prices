@@ -19,7 +19,7 @@ def kafka_to_feature_store(
     feature_group_name: str,
     feature_group_version: int,
     buffer_size: int | None,
-    live: bool | None = config.live
+    live: bool
 ) -> None:
     """
     Read OHLC data (that is, the features) from the Kafka topic, and send them to
@@ -46,36 +46,42 @@ def kafka_to_feature_store(
             msg = consumer.poll(timeout=1)  # Wait for a second for each message
 
             if msg is None:
-                logger.warning(f"No new message have come through the topic {kafka_topic}")
+                logger.warning(f"No new messages have come through the topic {kafka_topic}")
+
+                # Ensure that if there is somehow no message on the first try,
+                if last_time_saved_to_store is None:
+                    last_time_saved_to_store = get_current_time()
 
                 if get_current_time() - last_time_saved_to_store > config.patience:
                     logger.warning("Exceeded the timer limit. Force pushing data to the feature store")
                     push_data_to_feature_store(
                         feature_group_name=feature_group_name,
                         feature_group_version=feature_group_version,
-                        data=buffer,
+                        features=buffer,
                         to_offline_store=False if live else True
                     )
                     buffer = []
                 else:
-                    logger.info("Did not exceed the timer limit. Skipping ")
+                    logger.info("Did not exceed the timer limit. Continuing to poll messages from the input topic")
                     continue
 
             elif msg.error():
                 logger.error(f"Kafka error: {msg.error()}")
                 continue
+
             else:
                 value = msg.value()
                 ohlc = json.loads(value.decode("utf-8"))
+                buffer.append(ohlc)
 
                 if len(buffer) >= buffer_size:
                     push_data_to_feature_store(
                         feature_group_name=feature_group_name,
                         feature_group_version=feature_group_version,
-                        data=ohlc,
+                        features=buffer,
                         to_offline_store=False if live else True
                     )
-                    buffer = []
+                    buffer = []  # Empty the buffer to prepare for the next message
 
                 last_time_saved_to_store = get_current_time()
             consumer.store_offsets(message=msg)
@@ -87,5 +93,6 @@ if __name__ == "__main__":
         kafka_broker_address=config.kafka_broker_address,
         feature_group_name=config.feature_group_name,
         feature_group_version=config.feature_group_version,
-        buffer_size=config.buffer_size
+        buffer_size=config.buffer_size,
+        live=config.live
     )
