@@ -3,6 +3,7 @@ import requests
 
 from loguru import logger
 from websocket import create_connection
+from producer_config import Trade
 
 
 class KrakenWebsocketAPI:
@@ -46,10 +47,10 @@ class KrakenWebsocketAPI:
             self.websocket.close()
             self.connect()
 
-    def get_trades(self) -> list[dict]:
-
+    def get_trades(self) -> list[set[Trade]]:
         self.websocket = self.connect()
         self.subscribe(product_id=self.product_id)
+
         try:
             message = self.websocket.recv()
         except Exception as e:
@@ -64,13 +65,11 @@ class KrakenWebsocketAPI:
 
         trades = []
         for trade in parsed_message["data"]:
-            trades.append(
-                {
-                    "product_id": self.product_id,
-                    "price": trade["price"],
-                    "volume": trade["qty"],
-                    "timestamp": trade["timestamp"]
-                }
+            Trade(
+                product_id=trade["symbol"],
+                price=trade["price"],
+                volume=trade["qty"],
+                timestamp_ms=trade["timestamp"]
             )
 
         return trades
@@ -90,7 +89,7 @@ class KrakenRestAPI:
         self.to_ms = to_ms
         self.is_finished = None
 
-    def get_trades(self) -> list[dict[str, float | str]]:
+    def get_trades(self) -> list[Trade]:
         """
         Make an HTTP request to the REST API for data between one timestamp and another, and extract
         the metrics of interest from the response. Then check whether the last timestamp in the
@@ -104,23 +103,22 @@ class KrakenRestAPI:
 
         for product_id in self.product_ids:
             # The terminal time must be in seconds
-            url = f"https://api.kraken.com/0/public/Trades?pair={product_id}&since={self.from_ms//1_000}"
+            url = f"https://api.kraken.com/0/public/Trades?pair={product_id}&since={self.from_ms // 1_000}"
+
             headers = {"Accept": "application/json"}
             response = requests.request(method="GET", url=url, headers=headers, data=payload)
-
             raw_data = json.loads(response.text)
+
             data_of_interest = [
-                {
-                    "price": float(trade[0]),
-                    "volume": float(trade[1]),
-                    "time": float(trade[2]),
-                    "product_id": product_id
-                } for trade in raw_data["result"][product_id]
+                Trade(
+                    product_id=product_id, price=float(trade[0]), volume=float(trade[1]), timestamp_ms=int(trade[2])
+                )
+                for trade in raw_data["result"][product_id]
             ]
 
             all_trades.extend(data_of_interest)
             last_timestamp_ns = int(raw_data["result"]["last"])
-            last_timestamp_ms = last_timestamp_ns//1_000_000
+            last_timestamp_ms = last_timestamp_ns // 1_000_000
 
             if last_timestamp_ms >= self.to_ms:
                 logger.success(f"Done collecting historical data")

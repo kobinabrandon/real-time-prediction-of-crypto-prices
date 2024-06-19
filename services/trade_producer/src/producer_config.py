@@ -1,11 +1,33 @@
 import os
 from dotenv import load_dotenv, find_dotenv
+
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
 # Load the .env file variables as environment variables to enable access
 load_dotenv(
     find_dotenv(filename="../.env")
 )
+
+
+class Trade(BaseModel):
+    product_id: str
+    price: float
+    volume: float
+    timestamp_ms: int
+
+    def to_dict(self) -> dict[str, float | int]:
+        """
+        Exists to make the contents of the Trade object JSON serializable
+        by the Kafka topic
+        :return: the dictionary of metrics for each trade
+        """
+        return {
+            "product_id": self.product_id,
+            "price": self.price,
+            "volume": self.volume,
+            "timestamp_ms": self.timestamp_ms
+        }
 
 
 class Config(BaseSettings):

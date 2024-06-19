@@ -2,7 +2,7 @@ import time
 from loguru import logger
 from quixstreams import Application
 
-from producer_config import config
+from producer_config import config, Trade
 from kraken_api import KrakenWebsocketAPI, KrakenRestAPI
 
 
@@ -34,9 +34,9 @@ def produce_trades(
             kraken_api = KrakenRestAPI(product_ids=config.product_ids, from_ms=from_ms, to_ms=to_ms)
 
         while True:
-            trade_data = kraken_api.get_trades()
+            trade_data: list[Trade] = kraken_api.get_trades()
             for trade in trade_data:
-                message = topic.serialize(key=trade["product_id"], value=trade, timestamp_ms=trade["time"])
+                message = topic.serialize(key=trade.product_id, value=trade.to_dict(), timestamp_ms=trade.timestamp_ms)
 
                 # Produce into Kafka topic
                 producer.produce(
