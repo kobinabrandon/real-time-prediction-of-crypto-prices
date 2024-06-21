@@ -1,8 +1,10 @@
+import os
+
 from loguru import logger
 from datetime import timedelta
 from quixstreams import Application
 
-from ohlc_config import config
+from ohlc_config import set_vars
 
 
 def extract_columns_of_interest(dataframe: Application.dataframe) -> Application.dataframe:
@@ -72,34 +74,29 @@ def custom_timestamp_extractor(value: any) -> int:
     return value["timestamp_ms"]
 
 
-def trade_to_ohlc(
-    kafka_broker_address: str,
-    input_kafka_topic: str,
-    output_kafka_topic: str,
-    kafka_consumer_group: str,
-    ohlc_window_seconds: int
-) -> None:
+def trade_to_ohlc(live: bool) -> None:
 
+    config = set_vars(live=live)
     app = Application(
-        broker_address=kafka_broker_address,
-        consumer_group=kafka_consumer_group,
+        broker_address=config["kafka_broker_address"],
+        consumer_group=config["kafka_consumer_group"],
         auto_offset_reset="earliest"
     )
     
     input_topic = app.topic(
-        name=input_kafka_topic,
+        name=config["input_kafka_topic"],
         value_serializer="json",
         timestamp_extractor=custom_timestamp_extractor
     )
 
-    output_topic = app.topic(name=output_kafka_topic, value_serializer="json")
+    output_topic = app.topic(name=config["output_kafka_topic"], value_serializer="json")
     streaming_df = app.dataframe(topic=input_topic)
 
     # Apply transformations to the incoming data
     # TO DO 
 
     streaming_df = streaming_df.tumbling_window(
-        duration_ms=timedelta(seconds=ohlc_window_seconds)
+        duration_ms=timedelta(seconds=config["ohlc_windows_seconds"])
     )
 
     streaming_df = streaming_df.reduce(reducer=update_ohlc_candle, initializer=init_ohlc_candle).current()
@@ -113,10 +110,4 @@ def trade_to_ohlc(
 
 
 if __name__ == "__main__":
-    trade_to_ohlc(
-        kafka_broker_address=config.kafka_broker_address,
-        input_kafka_topic=config.input_kafka_topic,
-        output_kafka_topic=config.output_kafka_topic,
-        kafka_consumer_group=config.kafka_consumer_group,
-        ohlc_window_seconds=config.ohlc_windows_seconds
-    )
+    trade_to_ohlc(live=os.environ["LIVE"])

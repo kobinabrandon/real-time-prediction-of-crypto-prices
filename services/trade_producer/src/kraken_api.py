@@ -1,6 +1,6 @@
 import json
 import requests
-
+from datetime import datetime
 from loguru import logger
 from websocket import create_connection
 from producer_config import Trade
@@ -63,13 +63,19 @@ class KrakenWebsocketAPI:
 
         parsed_message = json.loads(message)
 
+        def iso_to_unix_time(iso_time: str) -> int:
+            utc_timestamp = iso_time.replace("Z", "+00:00")  # Change to Zulu time (UTC)
+            parsed_iso = datetime.fromisoformat(utc_timestamp)
+            seconds_since_unix_epoch = int(parsed_iso.timestamp())
+            return seconds_since_unix_epoch  # Return the time in POSIX form
+
         trades = []
         for trade in parsed_message["data"]:
             Trade(
                 product_id=trade["symbol"],
                 price=trade["price"],
                 volume=trade["qty"],
-                timestamp_ms=trade["timestamp"]
+                timestamp_ms=iso_to_unix_time(trade["timestamp"]) * 1000
             )
 
         return trades
@@ -129,4 +135,5 @@ class KrakenRestAPI:
                 logger.success("Done")
                 self.is_finished = True
                 break
+
         return all_trades

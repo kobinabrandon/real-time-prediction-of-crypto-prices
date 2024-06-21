@@ -1,13 +1,6 @@
 import os
-from dotenv import load_dotenv, find_dotenv
 
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings
-
-# Load the historical.env file variables as environment variables to enable access
-load_dotenv(
-    find_dotenv(filename="../historical.env")
-)
 
 
 class Trade(BaseModel):
@@ -30,14 +23,14 @@ class Trade(BaseModel):
         }
 
 
-class Config(BaseSettings):
-    product_ids: list[str] = ["ETH/USD", "ETH/EUR", "BTC/USD"]
-    last_n_days: int | None = 7
-
-    input_kafka_topic: str = os.environ["INPUT_KAFKA_TOPIC"]
-    output_kafka_topic: str = os.environ["OUTPUT_KAFKA_TOPIC"]
-    kafka_broker_address: str = os.environ["KAFKA_BROKER_ADDRESS"]
-    ohlc_windows_seconds: int = os.environ["OHLC_WINDOWS_SECONDS"]
-
-
-config = Config()
+def set_vars(live: bool) -> dict[str, list[str] | int | str]:
+    live_or_historical = "live" if live else "historical"
+    return {
+        "last_n_days": os.environ["LAST_N_DAYS"],
+        "ohlc_windows_seconds": 60,
+        "product_ids": ["ETH/EUR", "ETH/USD", "BTC/USD"],
+        "input_kafka_topic": f"trade_producer_{live_or_historical}",
+        "output_kafka_topic": f"ohlc_producer_{live_or_historical}",
+        "kafka_consumer_group": f"trade_producer_{live_or_historical}",
+        "kafka_broker_address": os.environ["KAFKA_BROKER_ADDRESS"]
+    }

@@ -1,37 +1,32 @@
+import os
 import time
 from loguru import logger
 from quixstreams import Application
 
-from producer_config import config, Trade
+from producer_config import set_vars, Trade
 from kraken_api import KrakenWebsocketAPI, KrakenRestAPI
 
 
-def produce_trades(
-        kafka_broker_address: str,
-        kafka_topic_name: str,
-        last_n_days: int | None,
-        live: bool
-) -> None:
+def produce_trades(live: bool) -> None:
     """
     Reads trades from the Kraken websocket API and saves them into a Kafka topic.
 
-    :param kafka_broker_address: The address of the Kafka broker.
-    :param kafka_topic_name: The name of the Kafka topic.
     :param live: whether we want live or historical data.
-    :param last_n_days: the number of days of historical data that we will get if live is set to False.
+
     :return: None
     """
-    app = Application(broker_address=kafka_broker_address)
-    topic = app.topic(name=kafka_topic_name, value_serializer="json")
+    config = set_vars(live=live)
+    app = Application(broker_address=config["kafka_broker_address"])
+    topic = app.topic(name=config["input_kafka_topic"], value_serializer="json")
 
     logger.info("Creating the producer")
     with app.get_producer() as producer:
         if live:
-            kraken_api = KrakenWebsocketAPI(product_ids=config.product_ids[0])
+            kraken_api = KrakenWebsocketAPI(product_ids=config["product_ids"])
         else:
             to_ms = int(time.time() * 1000)  # Convert current time in seconds into milliseconds
-            from_ms = to_ms - last_n_days * 24 * 60 * 60 * 1000
-            kraken_api = KrakenRestAPI(product_ids=config.product_ids, from_ms=from_ms, to_ms=to_ms)
+            from_ms = to_ms - config["last_n_days"] * 24 * 60 * 60 * 1000
+            kraken_api = KrakenRestAPI(product_ids=config["product_ids"], from_ms=from_ms, to_ms=to_ms)
 
         while True:
             trade_data: list[Trade] = kraken_api.get_trades()
@@ -48,17 +43,12 @@ def produce_trades(
 
                 logger.info(message.value)
 
-            if kraken_api.is_finished:
-                logger.success("Done fetching historical data")
-                break
+                if kraken_api.is_finished:
+                    logger.success("Done fetching historical data")
+                    break
 
             time.sleep(1)
 
 
 if __name__ == "__main__":
-    produce_trades(
-        kafka_broker_address=config.kafka_broker_address,
-        kafka_topic_name=config.input_kafka_topic,
-        last_n_days=config.last_n_days,
-        live=False
-    )
+    produce_trades(live=os.getenv("LIVE"))
