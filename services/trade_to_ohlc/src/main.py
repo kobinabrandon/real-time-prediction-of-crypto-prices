@@ -60,6 +60,18 @@ def update_ohlc_candle(ohlc_candle: dict, trade: dict) -> dict:
     }
 
 
+def custom_timestamp_extractor(value: any) -> int:
+    """
+    A custom timestamp extractor to get the timestamp from the message payload
+    instead of the timestamp that Kafka generates when the message is saved into the topic.
+    Args:
+        value:
+
+    Returns:
+    """
+    return value["timestamp_ms"]
+
+
 def trade_to_ohlc(
     kafka_broker_address: str,
     input_kafka_topic: str,
@@ -69,14 +81,18 @@ def trade_to_ohlc(
 ) -> None:
 
     app = Application(
-        broker_address=kafka_broker_address, 
+        broker_address=kafka_broker_address,
         consumer_group=kafka_consumer_group,
         auto_offset_reset="earliest"
     )
     
-    input_topic = app.topic(name=input_kafka_topic, value_serializer="json")
-    output_topic = app.topic(name=output_kafka_topic, value_serializer="json")
+    input_topic = app.topic(
+        name=input_kafka_topic,
+        value_serializer="json",
+        timestamp_extractor=custom_timestamp_extractor
+    )
 
+    output_topic = app.topic(name=output_kafka_topic, value_serializer="json")
     streaming_df = app.dataframe(topic=input_topic)
 
     # Apply transformations to the incoming data
