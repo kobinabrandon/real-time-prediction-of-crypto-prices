@@ -4,9 +4,9 @@ from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
-# Load the .env file variables as environment variables to enable access
+# Load the historical.env file variables as environment variables to enable access
 load_dotenv(
-    find_dotenv(filename="../.env")
+    find_dotenv(filename="../historical.env")
 )
 
 
@@ -32,7 +32,6 @@ class Trade(BaseModel):
 
 class Config(BaseSettings):
     product_ids: list[str] = ["ETH/USD", "ETH/EUR", "BTC/USD"]
-    live: bool = os.environ["LIVE"]
     last_n_days: int | None = 7
 
     input_kafka_topic: str = os.environ["INPUT_KAFKA_TOPIC"]

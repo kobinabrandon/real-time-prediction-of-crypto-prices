@@ -2,7 +2,7 @@ from loguru import logger
 from datetime import timedelta
 from quixstreams import Application
 
-from candles_config import config
+from ohlc_config import config
 
 
 def extract_columns_of_interest(dataframe: Application.dataframe) -> Application.dataframe:
@@ -98,9 +98,9 @@ def trade_to_ohlc(
 
 if __name__ == "__main__":
     trade_to_ohlc(
+        kafka_broker_address=config.kafka_broker_address,
         input_kafka_topic=config.input_kafka_topic,
         output_kafka_topic=config.output_kafka_topic,
-        kafka_broker_address=config.kafka_broker_address,
         kafka_consumer_group=config.kafka_consumer_group,
         ohlc_window_seconds=config.ohlc_windows_seconds
     )

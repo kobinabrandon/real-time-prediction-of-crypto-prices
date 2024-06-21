@@ -1,5 +1,7 @@
 .idea
-**.env
+services/trade_producer/historical.env
 **__pycache__
+**live.env
+**historical.env
 
 **/state

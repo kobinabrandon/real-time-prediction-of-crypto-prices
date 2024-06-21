@@ -2,9 +2,9 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from pydantic_settings import BaseSettings
 
-# Load the .env file variables as environment variables to enable access
+# Load the historical.env file variables as environment variables to enable access
 load_dotenv(
-    find_dotenv(filename="../.env")
+    find_dotenv(filename="../historical.env")
 )
 
 
