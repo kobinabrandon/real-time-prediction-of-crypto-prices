@@ -96,7 +96,9 @@ def trade_to_ohlc(live: bool) -> None:
     # TO DO 
 
     streaming_df = streaming_df.tumbling_window(
-        duration_ms=timedelta(seconds=config["ohlc_windows_seconds"])
+        duration_ms=timedelta(
+            seconds=int(config["ohlc_windows_seconds"])
+        )
     )
 
     streaming_df = streaming_df.reduce(reducer=update_ohlc_candle, initializer=init_ohlc_candle).current()
@@ -110,4 +112,6 @@ def trade_to_ohlc(live: bool) -> None:
 
 
 if __name__ == "__main__":
-    trade_to_ohlc(live=os.environ["LIVE"])
+    trade_to_ohlc(
+        live=bool(os.environ["LIVE"])
+    )
