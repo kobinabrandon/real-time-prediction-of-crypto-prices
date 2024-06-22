@@ -1,5 +1,6 @@
 import os
 
+import quixstreams.models
 from loguru import logger
 from datetime import timedelta
 from quixstreams import Application
@@ -62,14 +63,24 @@ def update_ohlc_candle(ohlc_candle: dict, trade: dict) -> dict:
     }
 
 
-def custom_timestamp_extractor(value: any) -> int:
+def custom_timestamp_extractor(
+        value: any,
+        headers: list[tuple[str, bytes]] | None,
+        timestamp: float,
+        timestamp_type: quixstreams.models.TimestampType
+) -> int:
     """
     A custom timestamp extractor to get the timestamp from the message payload
     instead of the timestamp that Kafka generates when the message is saved into the topic.
+    The parameters after value must be specified lest the function no longer work.
     Args:
         value:
+        headers:
+        timestamp:
+        timestamp_type:
 
     Returns:
+        int: the timestamp in the message payload.
     """
     return value["timestamp_ms"]
 
@@ -86,7 +97,7 @@ def trade_to_ohlc(live: bool) -> None:
     input_topic = app.topic(
         name=config["input_kafka_topic"],
         value_serializer="json",
-        timestamp_extractor=custom_timestamp_extractor
+        timestamp_extractor=custom_timestamp_extractor  #
     )
 
     output_topic = app.topic(name=config["output_kafka_topic"], value_serializer="json")
