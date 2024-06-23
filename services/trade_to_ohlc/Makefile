@@ -1,11 +1,11 @@
 run-live:
-	LIVE=True \
+	LIVE=live \
 	OHLC_WINDOW_SECONDS=60 \
 	KAFKA_BROKER_ADDRESS=localhost:19092 \
 	poetry run python src/main.py
 
 run-historical:
-	LIVE=False \
+	LIVE=historical \
 	OHLC_WINDOW_SECONDS=60 \
 	KAFKA_BROKER_ADDRESS=localhost:19092 \
 	poetry run python src/main.py

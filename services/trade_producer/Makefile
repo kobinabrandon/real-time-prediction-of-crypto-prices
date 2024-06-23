@@ -1,12 +1,10 @@
 run-live:
 	LIVE=live \
-	LAST_N_DAYS=30 \
 	KAFKA_BROKER_ADDRESS=localhost:19092 \
 	poetry run python src/main.py
 
 run-historical:
-	LIVE=historical\
-  	LAST_N_DAYS=30 \
+	LIVE=historical \
   	KAFKA_BROKER_ADDRESS=localhost:19092 \
 	poetry run python src/main.py
 

@@ -29,7 +29,11 @@ def produce_trades(live_or_historical: str) -> None:
         while True:
             trade_data: list[Trade] = kraken_api.get_trades()
             for trade in trade_data:
-                message = topic.serialize(key=trade.product_id, value=trade.to_dict(), timestamp_ms=trade.timestamp_ms)
+                message = topic.serialize(
+                    key=trade.product_id,
+                    value=trade.to_dict(),
+                    timestamp_ms=trade.timestamp_ms
+                )
 
                 # Produce into Kafka topic
                 producer.produce(

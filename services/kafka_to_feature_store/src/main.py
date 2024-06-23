@@ -72,7 +72,7 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
 
                 last_time_saved_to_store = get_current_time()
 
-#            consumer.store_offsets(message=msg)
+            # consumer.store_offsets(message=msg)
 
 
 if __name__ == "__main__":

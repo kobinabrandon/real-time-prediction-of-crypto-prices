@@ -1,9 +1,9 @@
 import os
 
-import quixstreams.models
 from loguru import logger
 from datetime import timedelta
 from quixstreams import Application
+from quixstreams.models import TimestampType
 
 from ohlc_config import set_vars
 
@@ -52,7 +52,7 @@ def update_ohlc_candle(ohlc_candle: dict, trade: dict) -> dict:
         trade (dict): incoming trade
 
     Returns:
-        dict: _description_
+        dict: the updated OHLC values
     """
     return {
         "open": ohlc_candle["open"],
@@ -67,7 +67,7 @@ def custom_timestamp_extractor(
         value: any,
         headers: list[tuple[str, bytes]] | None,
         timestamp: float,
-        timestamp_type: quixstreams.models.TimestampType
+        timestamp_type: TimestampType
 ) -> int:
     """
     A custom timestamp extractor to get the timestamp from the message payload
@@ -86,7 +86,6 @@ def custom_timestamp_extractor(
 
 
 def trade_to_ohlc(live_or_historical: str) -> None:
-
     config = set_vars(live_or_historical=live_or_historical)
     app = Application(
         broker_address=config["kafka_broker_address"],
@@ -97,7 +96,7 @@ def trade_to_ohlc(live_or_historical: str) -> None:
     input_topic = app.topic(
         name=config["input_kafka_topic"],
         value_serializer="json",
-        timestamp_extractor=custom_timestamp_extractor  #
+        timestamp_extractor=custom_timestamp_extractor
     )
 
     output_topic = app.topic(name=config["output_kafka_topic"], value_serializer="json")
