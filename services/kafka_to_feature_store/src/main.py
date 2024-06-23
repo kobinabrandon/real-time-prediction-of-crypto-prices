@@ -1,9 +1,10 @@
 import json
+import os
 from datetime import datetime
 from loguru import logger
 from quixstreams import Application
 
-from hopsworks_config import config
+from hopsworks_config import set_vars
 from hopsworks_api import push_data_to_feature_store
 
 
@@ -13,29 +14,21 @@ def get_current_time() -> int:
     )
 
 
-def kafka_to_feature_store(
-    kafka_topic: str,
-    kafka_broker_address: str,
-    feature_group_name: str,
-    feature_group_version: int,
-    buffer_size: int | None,
-    live: bool
-) -> None:
+def kafka_to_feature_store(live_or_historical: str) -> None:
     """
     Read OHLC data (that is, the features) from the Kafka topic, and send them to
     the feature group in the Hopsworks feature store.
 
-    :param kafka_topic: the kafka topic that we are listening to for the features
-    :param kafka_broker_address: the address of the kafka broker
-    :param feature_group_name: the name of the feature group that the data is being sent to
-    :param feature_group_version: the version of said feature group
-    :param buffer_size: the number of trades that are gathered, and subsequently sent to Hopsworks
-    :param live: whether we are uploading live or historical data
+    :param live_or_historical: whether we are uploading live or historical data
     :return: None
     """
     buffer = []
+    config = set_vars(live_or_historical=live_or_historical.lower())
+    kafka_topic = config["output_kafka_topic"]  # the kafka topic that we are listening to for the features
+    buffer_size = config["buffer_size"]  # the number of trades that are gathered, and subsequently sent to Hopsworks
+
     app = Application(
-        broker_address=kafka_broker_address,
+        broker_address=config["kafka_broker_address"],
         consumer_group="kafka_to_feature_store"
     )
 
@@ -52,14 +45,9 @@ def kafka_to_feature_store(
                 if last_time_saved_to_store is None:
                     last_time_saved_to_store = get_current_time()
 
-                if get_current_time() - last_time_saved_to_store > config.patience:
+                if get_current_time() - last_time_saved_to_store > config["patience"]:
                     logger.warning("Exceeded the timer limit. Force pushing data to the feature store")
-                    push_data_to_feature_store(
-                        feature_group_name=feature_group_name,
-                        feature_group_version=feature_group_version,
-                        features=buffer,
-                        to_offline_store=False if live else True
-                    )
+                    push_data_to_feature_store(to_offline_store=False if live_or_historical else True)
                     buffer = []
                 else:
                     logger.info("Did not exceed the timer limit. Continuing to poll messages from the input topic")
@@ -76,10 +64,8 @@ def kafka_to_feature_store(
 
                 if len(buffer) >= buffer_size:
                     push_data_to_feature_store(
-                        feature_group_name=feature_group_name,
-                        feature_group_version=feature_group_version,
                         features=buffer,
-                        to_offline_store=False if live else True
+                        to_offline_store=False if live_or_historical.lower() == "live" else True
                     )
                     buffer = []  # Empty the buffer to prepare for the next message
 
@@ -89,10 +75,5 @@ def kafka_to_feature_store(
 
 if __name__ == "__main__":
     kafka_to_feature_store(
-        kafka_topic=config.output_kafka_topic,
-        kafka_broker_address=config.kafka_broker_address,
-        feature_group_name=config.feature_group_name,
-        feature_group_version=config.feature_group_version,
-        buffer_size=config.buffer_size,
-        live=config.live
+        live_or_historical=os.environ["LIVE"]
     )

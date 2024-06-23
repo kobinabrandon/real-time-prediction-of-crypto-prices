@@ -12,7 +12,7 @@ services:
       - redpanda_network
     environment:
       KAFKA_BROKER_ADDRESS: redpanda-0:9092
-      LIVE: True
+      LIVE: live
   trade_to_ohlc:
     container_name: trade_to_ohlc
     build:
@@ -20,6 +20,7 @@ services:
     networks:
       - redpanda_network
     environment:
+      LIVE: live
       KAFKA_BROKER_ADDRESS: redpanda-0:9092
       OHLC_WINDOW_SECONDS: 60
   kafka_to_feature_store:

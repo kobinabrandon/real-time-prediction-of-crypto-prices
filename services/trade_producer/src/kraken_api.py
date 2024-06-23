@@ -1,6 +1,7 @@
 import json
 import requests
 from datetime import datetime
+
 from loguru import logger
 from websocket import create_connection
 from producer_config import Trade

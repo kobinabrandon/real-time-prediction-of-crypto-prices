@@ -85,9 +85,9 @@ def custom_timestamp_extractor(
     return value["timestamp_ms"]
 
 
-def trade_to_ohlc(live: bool) -> None:
+def trade_to_ohlc(live_or_historical: str) -> None:
 
-    config = set_vars(live=live)
+    config = set_vars(live_or_historical=live_or_historical)
     app = Application(
         broker_address=config["kafka_broker_address"],
         consumer_group=config["kafka_consumer_group"],
@@ -108,7 +108,7 @@ def trade_to_ohlc(live: bool) -> None:
 
     streaming_df = streaming_df.tumbling_window(
         duration_ms=timedelta(
-            seconds=int(config["ohlc_windows_seconds"])
+            seconds=int(config["ohlc_window_seconds"])
         )
     )
 
@@ -124,5 +124,5 @@ def trade_to_ohlc(live: bool) -> None:
 
 if __name__ == "__main__":
     trade_to_ohlc(
-        live=bool(os.environ["LIVE"])
+        live_or_historical=os.environ["LIVE"]
     )

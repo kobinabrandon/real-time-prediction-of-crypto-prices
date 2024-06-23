@@ -7,27 +7,25 @@ from producer_config import set_vars, Trade
 from kraken_api import KrakenWebsocketAPI, KrakenRestAPI
 
 
-def produce_trades(live: bool) -> None:
+def produce_trades(live_or_historical: str) -> None:
     """
     Reads trades from the Kraken websocket API and saves them into a Kafka topic.
 
-    :param live: whether we want live or historical data.
-
+    :param live_or_historical: whether we want live or historical data.
     :return: None
     """
-    config = set_vars(live=live)
+    config = set_vars(live_or_historical=live_or_historical)
     app = Application(broker_address=config["kafka_broker_address"])
     topic = app.topic(name=config["input_kafka_topic"], value_serializer="json")
 
     logger.info("Creating the producer")
     with app.get_producer() as producer:
-        if live:
+        if live_or_historical.lower() == "live":
             kraken_api = KrakenWebsocketAPI(product_ids=config["product_ids"])
-        else:
+        elif live_or_historical.lower() == "historical":
             to_ms = int(time.time() * 1000)  # Convert current time in seconds into milliseconds
             from_ms = to_ms - config["last_n_days"] * 24 * 60 * 60 * 1000
             kraken_api = KrakenRestAPI(product_ids=config["product_ids"], from_ms=from_ms, to_ms=to_ms)
-
         while True:
             trade_data: list[Trade] = kraken_api.get_trades()
             for trade in trade_data:
@@ -51,4 +49,6 @@ def produce_trades(live: bool) -> None:
 
 
 if __name__ == "__main__":
-    produce_trades(live=os.getenv("LIVE"))
+    produce_trades(
+        live_or_historical=os.environ["LIVE"]
+    )
