@@ -35,19 +35,20 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
     input_topic = app.topic(name=kafka_topic, value_deserializer="json")
     with app.get_consumer() as consumer:
         consumer.subscribe(topics=[kafka_topic])
+
         while True:
             msg = consumer.poll(timeout=1)  # Wait for a second for each message
 
             if msg is None:
                 logger.warning(f"No new messages have come through the topic {kafka_topic}")
-
-                # Ensure that if there is somehow no message on the first try,
-                if last_time_saved_to_store is None:
+                if "last_time_saved_to_store" not in locals():  # if there's no such variable yet
                     last_time_saved_to_store = get_current_time()
-
-                if get_current_time() - last_time_saved_to_store > config["patience"]:
+                elif get_current_time() - last_time_saved_to_store > config["patience"]:
                     logger.warning("Exceeded the timer limit. Force pushing data to the feature store")
-                    push_data_to_feature_store(to_offline_store=False if live_or_historical else True)
+                    push_data_to_feature_store(
+                        features=buffer,
+                        to_offline_store=False if live_or_historical else True
+                    )
                     buffer = []
                 else:
                     logger.info("Did not exceed the timer limit. Continuing to poll messages from the input topic")
@@ -57,8 +58,8 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
                 logger.error(f"Kafka error: {msg.error()}")
                 continue
 
-            else:
-                value = msg.value()
+            else:  # if there is a message and there are no errors
+                value = msg.value(payload=msg)
                 ohlc = json.loads(value.decode("utf-8"))
                 buffer.append(ohlc)
 
@@ -70,7 +71,8 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
                     buffer = []  # Empty the buffer to prepare for the next message
 
                 last_time_saved_to_store = get_current_time()
-            consumer.store_offsets(message=msg)
+
+#            consumer.store_offsets(message=msg)
 
 
 if __name__ == "__main__":
