@@ -59,14 +59,14 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
                 continue
 
             else:  # if there is a message and there are no errors
-                value = msg.value(payload=msg)
+                value = msg.value()
                 ohlc = json.loads(value.decode("utf-8"))
                 buffer.append(ohlc)
 
                 if len(buffer) >= buffer_size:
                     push_data_to_feature_store(
                         features=buffer,
-                        to_offline_store=False if live_or_historical.lower() == "live" else True
+                        to_offline_store=True if live_or_historical.lower() == "historical" else False
                     )
                     buffer = []  # Empty the buffer to prepare for the next message
 

@@ -19,7 +19,7 @@ def set_vars(live_or_historical: str) -> dict:
         "hopsworks_project_name": os.environ["HOPSWORKS_PROJECT_NAME"],
         "feature_group_name":  os.environ["FEATURE_GROUP_NAME"],
         "feature_group_version": os.environ["FEATURE_GROUP_VERSION"],
-        "save_every_n_seconds": os.environ["SAVE_EVERY_N_SECONDS"],
-        "buffer_size": 1 if live_or_historical == "live" else 3000,
+        "save_every_n_seconds": os.environ["SAVE_EVERY_N_SECONDS"] if live_or_historical == "historical" else None,
+        "buffer_size": 1 if live_or_historical == "live" else 30_000,
         "patience": 10
     }

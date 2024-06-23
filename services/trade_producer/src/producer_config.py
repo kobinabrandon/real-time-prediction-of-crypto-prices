@@ -27,8 +27,8 @@ def set_vars(live_or_historical: str) -> dict[str, list[str] | int | str]:
         "last_n_days": 30 if live_or_historical.lower() == "historical" else None,
         "ohlc_window_seconds": 60,
         "product_ids": ["ETH/USD", "BTC/USD", "ETH/EUR"],
-        "input_kafka_topic": f"trade_producer_{live_or_historical}",
-        "output_kafka_topic": f"ohlc_producer_{live_or_historical}",
-        "kafka_consumer_group": f"trade_producer_{live_or_historical}",
+        "input_kafka_topic": f"trade_{live_or_historical}",
+        "output_kafka_topic": f"ohlc_{live_or_historical}",
+        "kafka_consumer_group": f"trade_to_ohlc_{live_or_historical}",
         "kafka_broker_address": os.environ["KAFKA_BROKER_ADDRESS"]
     }
