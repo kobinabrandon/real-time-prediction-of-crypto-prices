@@ -20,6 +20,6 @@ def set_vars(live_or_historical: str) -> dict:
         "feature_group_name":  os.environ["FEATURE_GROUP_NAME"],
         "feature_group_version": os.environ["FEATURE_GROUP_VERSION"],
         "save_every_n_seconds": os.environ["SAVE_EVERY_N_SECONDS"] if live_or_historical == "historical" else None,
-        "buffer_size": 1 if live_or_historical == "live" else 30_000,
+        "buffer_size": 1 if live_or_historical == "live" else 1_000,
         "patience": 10
     }

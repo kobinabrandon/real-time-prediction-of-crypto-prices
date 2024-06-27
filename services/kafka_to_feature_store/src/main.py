@@ -47,7 +47,7 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
                     logger.warning("Exceeded the timer limit. Force pushing data to the feature store")
                     push_data_to_feature_store(
                         features=buffer,
-                        to_offline_store=False if live_or_historical else True
+                        to_offline_store=True if live_or_historical == "historical" else False
                     )
                     buffer = []
                 else:
@@ -59,11 +59,13 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
                 continue
 
             else:  # if there is a message and there are no errors
+                logger.success("Message received")
                 value = msg.value()
                 ohlc = json.loads(value.decode("utf-8"))
                 buffer.append(ohlc)
 
                 if len(buffer) >= buffer_size:
+                    logger.success(f"Fetched {len(buffer)} lines of data")
                     push_data_to_feature_store(
                         features=buffer,
                         to_offline_store=True if live_or_historical.lower() == "historical" else False
@@ -72,7 +74,7 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
 
                 last_time_saved_to_store = get_current_time()
 
-            # consumer.store_offsets(message=msg)
+            consumer.store_offsets(message=msg)
 
 
 if __name__ == "__main__":

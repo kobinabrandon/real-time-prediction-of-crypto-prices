@@ -34,4 +34,3 @@ def push_data_to_feature_store(features: list[dict], to_offline_store: bool) -> 
         features=pd.DataFrame(features),
         write_options={"start_offline_materialization": to_offline_store}
     )
-    
