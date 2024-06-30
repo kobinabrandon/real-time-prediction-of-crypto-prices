@@ -14,5 +14,5 @@ build:
 
 run: build
 	docker run \
- 	--network=redpanda_network kafka_to_feature_store --env KAFKA_BROKER_ADDRESS=redpanda-0:9092 \
+	--network=redpanda_network kafka_to_feature_store --env KAFKA_BROKER_ADDRESS=redpanda-0:9092 \
 	--env-file .env kafka_to_feature_store

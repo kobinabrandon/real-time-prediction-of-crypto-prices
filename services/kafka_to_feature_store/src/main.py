@@ -38,7 +38,6 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
 
         while True:
             msg = consumer.poll(timeout=1)  # Wait for a second for each message
-
             if msg is None:
                 logger.warning(f"No new messages have come through the topic {kafka_topic}")
                 if "last_time_saved_to_store" not in locals():  # if there's no such variable yet
@@ -73,8 +72,7 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
                     buffer = []  # Empty the buffer to prepare for the next message
 
                 last_time_saved_to_store = get_current_time()
-
-            consumer.store_offsets(message=msg)
+                consumer.store_offsets(message=msg)
 
 
 if __name__ == "__main__":

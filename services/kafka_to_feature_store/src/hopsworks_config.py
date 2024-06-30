@@ -2,7 +2,10 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(
-    find_dotenv(filename=".env", raise_error_if_not_found=True)
+    find_dotenv(
+        filename=".env",
+        raise_error_if_not_found=True
+    )
 )
 
 
@@ -13,7 +16,7 @@ def set_vars(live_or_historical: str) -> dict:
         "input_kafka_topic": f"trade_{live_or_historical}",
         "output_kafka_topic": f"ohlc_{live_or_historical}",
         "kafka_consumer_group": f"ohlc_{live_or_historical}_consumer_group",
-        "kafka_broker_address": os.environ["KAFKA_BROKER_ADDRESS"],
+        "kafka_broker_address": "localhost:19092",
         "ohlc_windows_seconds": os.environ["OHLC_WINDOWS_SECONDS"],
         "hopsworks_api_key": os.environ["HOPSWORKS_API_KEY"],
         "hopsworks_project_name": os.environ["HOPSWORKS_PROJECT_NAME"],
