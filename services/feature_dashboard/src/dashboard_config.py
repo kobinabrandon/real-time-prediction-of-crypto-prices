@@ -3,7 +3,10 @@ from pydantic_settings import BaseSettings
 
 
 load_dotenv(
-    find_dotenv(filename=".env", raise_error_if_not_found=True)
+    find_dotenv(
+        filename=".env",
+        raise_error_if_not_found=True
+    )
 )
 
 

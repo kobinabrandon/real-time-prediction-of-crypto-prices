@@ -2,16 +2,17 @@
 name = "src"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Kobina Brandon <maadabrandon@protonmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
-pydantic-settings = "^2.3.1"
-quixstreams = "^2.5.1"
-loguru = "^0.7.2"
+streamlit = "^1.36.0"
 hopsworks = "^3.7.0"
-pandas = "2.1.4"
+loguru = "^0.7.2"
+python-dotenv = "^1.0.1"
+pydantic-settings = "^2.3.4"
+bokeh = "2.4.1"
 
 [build-system]
 requires = ["poetry-core"]

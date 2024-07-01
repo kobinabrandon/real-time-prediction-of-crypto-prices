@@ -1,5 +1,6 @@
-import json
 import os
+import json
+
 from datetime import datetime
 from loguru import logger
 from quixstreams import Application
@@ -64,7 +65,7 @@ def kafka_to_feature_store(live_or_historical: str) -> None:
                 buffer.append(ohlc)
 
                 if len(buffer) >= buffer_size:
-                    logger.success(f"Fetched {len(buffer)} lines of data")
+                    logger.success(f"Fetched {len(buffer)} lines of data. Pushing them to feature store...")
                     push_data_to_feature_store(
                         features=buffer,
                         to_offline_store=True if live_or_historical.lower() == "historical" else False

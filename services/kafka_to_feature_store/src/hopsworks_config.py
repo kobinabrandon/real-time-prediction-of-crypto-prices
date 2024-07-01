@@ -12,7 +12,7 @@ load_dotenv(
 def set_vars(live_or_historical: str) -> dict:
     assert live_or_historical == "live" or "historical"
     return {
-        "product_ids": ["ETH/EUR", "ETH/USD", "BTC/USD"],
+        "product_ids": ["ETH/USD"],
         "input_kafka_topic": f"trade_{live_or_historical}",
         "output_kafka_topic": f"ohlc_{live_or_historical}",
         "kafka_consumer_group": f"ohlc_{live_or_historical}_consumer_group",

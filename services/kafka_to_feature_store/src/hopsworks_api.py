@@ -30,7 +30,9 @@ def push_data_to_feature_store(features: list[dict], to_offline_store: bool) -> 
         online_enabled=True
     )
 
+    data_to_push = pd.DataFrame(features)
+
     ohlc_feature_group.insert(
-        features=pd.DataFrame(features),
+        features=data_to_push,
         write_options={"start_offline_materialization": to_offline_store}
     )

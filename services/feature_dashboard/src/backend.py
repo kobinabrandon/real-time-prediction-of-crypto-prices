@@ -28,12 +28,12 @@ def get_features_from_store(feature_group_name: str, feature_group_version: int)
     )
 
     logger.success("Created feature view")
-
     features: pd.DataFrame = feature_view.get_batch_data()
-    return features
+    return features.sort_values(by="timestamp", ascending=True)
 
 
 if __name__ == "__main__":
+    
     data = get_features_from_store(
         feature_group_name=config.feature_group_name,
         feature_group_version=config.feature_group_version
