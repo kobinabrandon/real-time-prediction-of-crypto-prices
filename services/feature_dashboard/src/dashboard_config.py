@@ -3,14 +3,14 @@ from pydantic_settings import BaseSettings
 
 
 load_dotenv(
-    find_dotenv(
-        filename=".env",
-        raise_error_if_not_found=True
-    )
+    find_dotenv(filename=".env", raise_error_if_not_found=True)
 )
 
 
 class Config(BaseSettings):
+    live: str
+    product_id: str
+    last_n_minutes: int
 
     feature_group_name: str
     feature_group_version: int
