@@ -1,10 +1,9 @@
 from dotenv import load_dotenv, find_dotenv
 from pydantic_settings import BaseSettings
 
-
-load_dotenv(
-    find_dotenv(filename=".env", raise_error_if_not_found=True)
-)
+#load_dotenv(
+#    find_dotenv(filename=".env", raise_error_if_not_found=True)
+#)
 
 
 class Config(BaseSettings):

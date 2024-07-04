@@ -1,4 +1,3 @@
-import os
 import time
 
 import hopsworks
@@ -7,18 +6,12 @@ import pandas as pd
 from loguru import logger
 from hsfs.feature_view import FeatureView
 
-from src.dashboard_config import config
+from dashboard_config import config
+from tooling.src.feature_reader import FeatureReader
 
 
 def get_primary_keys(last_n_minutes: int) -> list[dict]:
-    """
-
-    Args:
-        last_n_minutes:
-
-    Returns:
-
-    """
+ 
     current_utc = int(time.time()*1000)
     current_utc_rounded = current_utc - (current_utc % 60000)  # Rounding to the nearest minute
     timestamps_last_n_minutes = [current_utc_rounded - i*60000 for i in range(last_n_minutes)]
@@ -78,7 +71,6 @@ def get_features_from_store(live_or_historical: str, feature_view_object: Featur
 
     elif live_or_historical.lower() == "historical":
         features: pd.DataFrame = feature_view_object.get_batch_data()
-
     else:
         raise Exception('We are only able to take "live" or "historical" as options')
 

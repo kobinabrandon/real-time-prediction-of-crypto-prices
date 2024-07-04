@@ -1,6 +1,6 @@
 .idea
-services/trade_producer/historical.env
+services/feature_pipeline/trade_producer/historical.env
 **__pycache__
 **env
-
+credentials.sh
 **/state
